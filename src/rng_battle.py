@@ -31,23 +31,26 @@ class Event:
 
 ENEMY_TYPES = [
     ("Skeleton", 1, 22, 5, 1, 0.90, 0.10, 0.10, (255, 255, 255), 1),
-    ("Wizard", 3, 26, 12, 1, 0.95, 0.15, 0.15, (0, 0, 255), 3)
-    ("Orc", 4, 70, 11, 3, 0.80, 0.00, 0.08, (0, 255, 0), 5)
+    ("Wizard", 3, 26, 12, 1, 0.95, 0.15, 0.15, (0, 0, 255), 3),
+    ("Orc", 4, 70, 11, 3, 0.80, 0.00, 0.08, (0, 255, 0), 5),
 ]
 
-
-def main():
-    pygame.init()
-    pygame.display.set_caption("RNG Battle")
-    resoution = (800, 600)
-    screen = pygame.display.set_mode(resoution)
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-    pygame.quit()
+def clamp(x, lo, hi):
+    return max(lo, min(hi, x))
 
 
-if __name__ == "__main__":
-    main()
+    def main():
+        pygame.init()
+        pygame.display.set_caption("RNG Battle")
+        resoution = (800, 600)
+        screen = pygame.display.set_mode(resoution)
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+        pygame.quit()
+
+
+    if __name__ == "__main__":
+        main()
