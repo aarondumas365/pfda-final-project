@@ -39,7 +39,23 @@ def clamp(x, lo, hi):
     return max(lo, min(hi, x))
 
 
-    def main():
+def resolve_attack(att: Combatant, dfn: Combatant, rng: random.Random) -> Event:
+     """One attack: hit roll, damage variance, crit roll. Mutates defender hp."""
+     target = "enemy" if dfn.name != "Hero" else "player"
+     if rng.random() > clamp(atk.acc - dfn.eva, 0.10, 0.95):
+          return Event("miss", target, 0, f"{atk.name} misses {dfn.name}")
+     crit = rng.random() < att.crit
+     raw = att.atk * rng.uniform(0.8, 1.2) * (175 if crit else 1.0)
+     armor = dfn.defn * (2 if dfn.defending else 1)
+     dmg = max(1, round(raw - armor))
+     dfn.hp = max (0, dfn.hp - dmg)
+     word = "CRITS" if crit else "hits"
+     return Event("crit" if crit else "hit", target, dmg, f"{att.name} {word} {dfn.name} for {dmg}")
+
+
+
+
+def main():
         pygame.init()
         pygame.display.set_caption("RNG Battle")
         resoution = (800, 600)
@@ -52,5 +68,5 @@ def clamp(x, lo, hi):
         pygame.quit()
 
 
-    if __name__ == "__main__":
-        main()
+if __name__ == "__main__":
+    main()
