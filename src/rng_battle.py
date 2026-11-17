@@ -42,8 +42,8 @@ def clamp(x, lo, hi):
 def resolve_attack(att: Combatant, dfn: Combatant, rng: random.Random) -> Event:
      """One attack: hit roll, damage variance, crit roll. Mutates defender hp."""
      target = "enemy" if dfn.name != "Hero" else "player"
-     if rng.random() > clamp(atk.acc - dfn.eva, 0.10, 0.95):
-          return Event("miss", target, 0, f"{atk.name} misses {dfn.name}")
+     if rng.random() > clamp(att.acc - dfn.eva, 0.10, 0.95):
+          return Event("miss", target, 0, f"{att.name} misses {dfn.name}")
      crit = rng.random() < att.crit
      raw = att.atk * rng.uniform(0.8, 1.2) * (175 if crit else 1.0)
      armor = dfn.defn * (2 if dfn.defending else 1)
@@ -52,8 +52,16 @@ def resolve_attack(att: Combatant, dfn: Combatant, rng: random.Random) -> Event:
      word = "CRITS" if crit else "hits"
      return Event("crit" if crit else "hit", target, dmg, f"{att.name} {word} {dfn.name} for {dmg}")
 
+def wave_budget(wave: int) -> float:
+    return 2 + 0.9 * wave ** 1.05
 
+def enemy_scale(wave: int) -> float:
+    return 1 + 0.03 * (wave - 1)
 
+class Game:
+    def __init__(self, seed: int | None = None):
+        self.seed
+        self.wave
 
 def main():
         pygame.init()
