@@ -102,6 +102,22 @@ class Game:
         self.state = "player"
         self.emit(Event("wave_start", "", self.wave, f"-- Wave {self.wave}: {len(self.queue) + 1} enemies --"))
 
+    def enemy_down(self):
+        self.kills += 1
+        self.emit(Event("death", "enemy", 0, f"{self.enemy.name} defeated"))
+        if self.queue:
+            self.enemy = self.queue.pop(0)
+            self.state = "player"
+        else:
+            self.emit(Event("wave_clear", "", self.wave, f"Wave {self.wave} cleared!"))
+            heal = round(self.player.max_hp * 0.40)
+            self.player.hp = min(self.player.max_hp, self.player.hp + heal)
+            self.rewards = random.Random(f"{self.seed}-reward-{self.wave}").sample(REWARD, 3)
+            self.state = "reward"
+
+    
+
+
 def main():
         pygame.init()
         pygame.display.set_caption("RNG Battle")
