@@ -139,6 +139,24 @@ class Game:
         self.state = "enemy"
         return True
 
+    def enemy_action(self):
+        if self.state != "enemy":
+            return
+        e, p = self.enemy, self.player
+        brace = e.hp < e.max_hp * 0.4 and self.rng.random() < 0.25
+        if brace:
+            e.defending = True
+            self.emit(Event("defend", "enemy", 0, f"{e.name} defends"))
+        else:
+            e.defending = False
+            self.emit(resolve_attack(e, p, self.rng))
+        if not p.alive:
+            self.state = "over"
+            self.emit(Event("over", "", self.wave, f"Hero has fallen on wave {self.wave}"))
+        else:
+            p.defending = False if not brace else p.defending
+            self.state = "player"
+
 
 
 def main():
