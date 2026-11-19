@@ -60,8 +60,47 @@ def enemy_scale(wave: int) -> float:
 
 class Game:
     def __init__(self, seed: int | None = None):
-        self.seed
-        self.wave
+        self.seed = seed if seed is not None else random.randrange(1_000_000)
+        self.wave = 0
+        self.state = "player"
+        self.events: list[Event] = []
+        self.log: deque[str] = deque(maxlen=6)
+        self.kills = 0
+        self.player = Combatant("Hero", 60, 11, 2, acc=0.92, eva=0.08, crit=0.12, color=(240, 210, 90), potions=3)
+        self.queue: list[Combatant] = []
+        self.enemy: Combatant | None = None
+        self.rewards: list[tuple[str, callable]] = []
+        self.rng = random.Random()
+        self.start_wave()
+
+        
+    def emit(self, ev: Event):
+        self.events.append(ev)
+        if ev.text:
+            self.log.append(ev.text)
+
+    def start_wave(self):
+        self.wave += 1
+        spawn_rng = random.Random(f"{self.seed}-spawn{self.wave}")
+        self.rng = random.Random(f"{self.seed}-combat-{self.wave}")
+        budget = wave_budget(self.wave)
+        pool = [t for t in ENEMY_TYPES if t[9] <= self.wave]
+        scale = enemy_scale(self.wave)
+        self.que = []
+        while True:
+            affordable = [t for t in pool if t[1] <= budget]
+            if not affordable:
+                break
+
+            t= spawn_rng.choices(affordable, [1 + t[1] * self.wave / 8 for t in affordable])[0]
+            budget -= t[1]
+            name, _, hp, atk, dfn, acc, eva, crit, color, _ = t
+            self.queue.append(Combatant(name, round(hp * scale), round(atk * scale), round(dfn*scale), acc, eva, crit, color))
+
+        self.enemy = self.queue.pop(0)
+        self.player.defending = False
+        self.state = "player"
+        self.emit(Event("wave_start", "", self.wave, f"-- Wave {self.wave}: {len(self.queue) + 1} enemies --"))
 
 def main():
         pygame.init()
