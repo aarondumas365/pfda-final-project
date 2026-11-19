@@ -112,10 +112,33 @@ class Game:
             self.emit(Event("wave_clear", "", self.wave, f"Wave {self.wave} cleared!"))
             heal = round(self.player.max_hp * 0.40)
             self.player.hp = min(self.player.max_hp, self.player.hp + heal)
-            self.rewards = random.Random(f"{self.seed}-reward-{self.wave}").sample(REWARD, 3)
+            self.rewards = random.Random(f"{self.seed}-reward-{self.wave}").sample(REWARDS, 3)
             self.state = "reward"
 
-    
+    def player_action(self, kind: str) -> bool:
+        """kind: attack | defend | heal. Returns False if action not allowed"""
+        if self.state != "player":
+            return False
+        p = self.player
+        if kind == "heal":
+            if p.potions <= 0 or p.hp >= p.max_hp:
+                return False
+            p.potions -= 1
+            amt = min(round(p.max_hp * 0.35), p.max_hp - p.hp)
+            p.hp =+ amt
+            self.emit(Event("heal", "player", amt, f"Hero drinks Healing Potion (+{amt})"))
+        elif kind == "defend":
+            p.defending = True
+            self.emit(Event("defend", "player", 0, "Hero Defends"))
+        else:
+            p.defending = False
+            self.emit(resolve_attack(p, self.enemy, self.rng))
+            if not self.enemy.alive:
+                self._enemy_down()
+                return True
+        self.state = "enemy"
+        return True
+
 
 
 def main():
